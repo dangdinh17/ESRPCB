@@ -22,7 +22,7 @@ class Ensemble():
         self.yolov8 = None
         self.yolov9 = None
         self.method = ensemble_type
-        self.output = './run'
+        self.output = './runs'
         self.val_path = None
         os.makedirs(self.output, exist_ok=True)
         try:
@@ -43,7 +43,17 @@ class Ensemble():
             with open(yaml_path, "r") as file:
                 data = yaml.safe_load(file)
             self.class_names = data['names']
-            self.label_colors = {i: (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for i in range(data['nc'])}
+            if data['nc'] == 6:
+                self.label_colors = {
+                    0: (255, 0, 0),  # Red
+                    1: (0, 255, 0),  # Green
+                    2: (0, 0, 255),  # Blue
+                    3: (255, 255, 0),  # Yellow
+                    4: (255, 0, 255),  # Magenta
+                    5: (0, 255, 255)   # Cyan
+                }
+            else:
+                self.label_colors = {i: (10 * i, 15 * i, 20 * i) for i in range(data['nc'])}
             self.val_path = data['val']
         except Exception as e:
             self.class_names = {

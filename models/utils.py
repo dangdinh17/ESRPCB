@@ -1,20 +1,17 @@
 import torch
-from torchvision.ops import nms
-import torch
-from ensemble_boxes import *
+import os
 import numpy as np
-from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
-import yaml
-import os
 import matplotlib.pyplot as plt
-
 import random 
 import cv2
-import ultralytics
-from ultralytics import YOLO
 from tqdm import tqdm
+from ensemble_boxes import *
+from ultralytics import YOLO
+from torchmetrics.detection.mean_ap import MeanAveragePrecision
+from torchmetrics import PeakSignalNoiseRatio, StructuralSimilarityIndexMeasure
+from fvcore.nn import FlopCountAnalysis
 
 def draw_and_save_predictions(image, boxes, labels, scores, class_names, label_colors, save_path=None, font_path=None):
     draw_image = image.copy()
@@ -23,7 +20,7 @@ def draw_and_save_predictions(image, boxes, labels, scores, class_names, label_c
     # Tải font (nếu có)
     if font_path:
         try:
-            font = ImageFont.truetype(font_path, size=25)
+            font = ImageFont.truetype(font_path, size=30)
         except Exception as e:
             print(f"Không thể tải font từ {font_path}. Sử dụng font mặc định.")
             font = ImageFont.load_default()
@@ -86,3 +83,20 @@ def denormalize_boxes(boxes, image_size):
     denormalized_boxes[:, [0, 2]] *= width
     denormalized_boxes[:, [1, 3]] *= height
     return denormalized_boxes
+
+
+def calculate_metrics(img1, img2, max_pixel_value=1.0):
+    device = img1.device
+    psnr = PeakSignalNoiseRatio(data_range=1.0).to(device)
+    ssim = StructuralSimilarityIndexMeasure(data_range=1.0).to(device)
+    psnr_value = psnr(img1, img2)
+    ssim_value = ssim(img1, img2)
+    return psnr_value, ssim_value
+
+def summary_model(model, input=None):
+    device = input.device
+    flops = FlopCountAnalysis(model,input)
+    n_param = sum([p.nelement() for p in model.parameters()])  # 所有参数数量
+    # print(f'GMac:{flops.total()/(1024*1024*1024)}')
+    # print(f'Params:{n_param}')
+    return flops.total()/(1024*1024*1024), n_param
