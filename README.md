@@ -1,6 +1,6 @@
 # ESRPCB
 ### Introduction
-This is an official implementation for "ESRPCB: an Edge guided Super - Resolution model and Ensemble learning for tiny Printed Circuit Board Defect detection".
+This is an official implementation for "[ESRPCB: an Edge guided Super - Resolution model and Ensemble learning for tiny Printed Circuit Board Defect detection](https://www.sciencedirect.com/science/article/abs/pii/S0952197625015490)".
 
 ## 1. Create Environment
 ### 1.1. Install the environment
